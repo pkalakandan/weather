@@ -26,7 +26,7 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    // org.springdoc.api.annotations
+    implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:4.10.0'
     implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.6.3'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
