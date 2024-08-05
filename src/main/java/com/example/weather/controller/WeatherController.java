@@ -41,7 +41,7 @@ public class WeatherController {
             @ApiResponse(responseCode = "500", description = "Internal error"),
             @ApiResponse(responseCode = "429", description = "Rate limit exceeded")
     })
-    @GetMapping(path = "/get/{country}/{city}")
+    @GetMapping(path = "/{country}/{city}")
     @WithRateLimitProtection
     public Mono<WeatherForecastResponse> getWeather(
             @ParameterObject @Valid WeatherForecastRequest weatherForecastRequest,
