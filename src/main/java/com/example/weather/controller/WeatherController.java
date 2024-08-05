@@ -2,7 +2,6 @@ package com.example.weather.controller;
 
 import com.example.weather.config.WithRateLimitProtection;
 import com.example.weather.model.RateLimitException;
-import com.example.weather.model.WeatherResponse;
 import com.example.weather.model.request.WeatherForecastRequest;
 import com.example.weather.model.response.WeatherForecastResponse;
 import com.example.weather.service.RateLimitingService;
@@ -11,13 +10,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.logging.Logger;
+
+import static com.example.weather.util.Constants.HEADER_API_KEY;
 
 @RestController
 @RequestMapping("/weather")
@@ -32,6 +33,7 @@ public class WeatherController {
         this.rateLimitingService = rateLimitingService;
     }
 
+    // annotation api key from header
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved weather"),
             @ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
@@ -42,9 +44,9 @@ public class WeatherController {
     @GetMapping(path = "/get/{country}/{city}")
     @WithRateLimitProtection
     public Mono<WeatherForecastResponse> getWeather(
-            @ParameterObject @Valid WeatherForecastRequest weatherForecastRequest
+            @ParameterObject @Valid WeatherForecastRequest weatherForecastRequest,
+            @RequestHeader(HEADER_API_KEY) String apiKey
     ) {
-        String apiKey = "test-api-key";
         if (rateLimitingService.allowRequest(apiKey)) {
             LOGGER.info("Getting weather");
             return weatherService.getWeather(weatherForecastRequest.getCountry(), weatherForecastRequest.getCity());

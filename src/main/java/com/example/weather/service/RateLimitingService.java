@@ -16,12 +16,13 @@ public class RateLimitingService {
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     public boolean allowRequest(String apiKey) {
+        // Create a new bucket for each API key
         Bucket bucket = buckets.computeIfAbsent(apiKey, this::createNewBucket);
         return bucket.tryConsume(1);
     }
 
-    private Bucket createNewBucket(String apiKey) {
-        Bandwidth limit = Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1)));
+    Bucket createNewBucket(String apiKey) {
+        Bandwidth limit = Bandwidth.classic(5, Refill.intervally(10, Duration.ofMinutes(60)));
         return Bucket4j.builder().addLimit(limit).build();
     }
 }

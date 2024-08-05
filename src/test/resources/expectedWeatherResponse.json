@@ -1,0 +1,45 @@
+{
+  "coord": {
+    "lon": 14.2862,
+    "lat": 48.3059
+  },
+  "weather": [
+    {
+      "id": 803,
+      "main": "Clouds",
+      "description": "broken clouds",
+      "icon": "04n"
+    }
+  ],
+  "base": "stations",
+  "main": {
+    "temp": 291.99,
+    "feels_like": 291.86,
+    "temp_min": 290.48,
+    "temp_max": 292.88,
+    "pressure": 1017,
+    "humidity": 74,
+    "sea_level": 1017,
+    "grnd_level": 985
+  },
+  "visibility": 10000,
+  "wind": {
+    "speed": 2.57,
+    "deg": 90
+  },
+  "clouds": {
+    "all": 63
+  },
+  "dt": 1722896324,
+  "sys": {
+    "type": 2,
+    "id": 37904,
+    "country": "AT",
+    "sunrise": 1722915901,
+    "sunset": 1722969146
+  },
+  "timezone": 7200,
+  "id": 2772400,
+  "name": "Linz",
+  "cod": 200
+}

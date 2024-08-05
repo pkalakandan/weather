@@ -1,14 +1,12 @@
 package com.example.weather.service;
 
 import com.example.weather.model.Geo;
-import com.example.weather.model.GeoResponse;
 import com.example.weather.model.WeatherResponse;
 import com.example.weather.model.response.WeatherForecastResponse;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
 
 import java.util.logging.Logger;
 
@@ -32,12 +30,14 @@ public class WeatherService {
         logger.info("Getting weather");
 
         return getGeoLocation(country, city)
+                //call getWeatherByLatLon with lat and lon from Geo if not null or empty
+                .filter(geo -> geo.length > 0 && geo[0].getLat() != 0 && geo[0].getLon() != 0)
                 .flatMap(geoResponse -> getWeatherByLatLon(geoResponse[0].getLat(),
                         geoResponse[0].getLon()))
                 .map(weatherResponse -> new WeatherForecastResponse(weatherResponse.getWeather().get(0).getDescription()));
     }
 
-    private Mono<WeatherResponse> getWeatherByLatLon(double lat, double lon) {
+    Mono<WeatherResponse> getWeatherByLatLon(double lat, double lon) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(API_WEATHER_URL)
@@ -46,10 +46,12 @@ public class WeatherService {
                         .queryParam("appid", API_KEY)
                         .build())
                 .retrieve()
-                .bodyToMono(WeatherResponse.class);
+                .bodyToMono(WeatherResponse.class)
+                // Due to time, unable to complete. Error handling can be improved
+                .onErrorReturn(new WeatherResponse());
     }
 
-    private Mono<Geo[]> getGeoLocation(String country, String city) {
+    Mono<Geo[]> getGeoLocation(String country, String city) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(API_GEO_URL)
@@ -57,6 +59,8 @@ public class WeatherService {
                         .queryParam("appid", API_KEY)
                         .build())
                 .retrieve()
-                .bodyToMono(Geo[].class);
+                .bodyToMono(Geo[].class)
+                // Due to time, unable to complete. Error handling can be improved
+                .onErrorReturn(new Geo[]{});
     }
 }
