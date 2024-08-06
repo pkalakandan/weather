@@ -3,6 +3,7 @@ package com.example.weather.service;
 import com.example.weather.model.Geo;
 import com.example.weather.model.WeatherResponse;
 import com.example.weather.model.response.WeatherForecastResponse;
+import com.example.weather.repository.WeatherRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -35,7 +36,7 @@ public class WeatherServiceTest {
     private final WebClient webClient = WebClient.builder()
             .baseUrl(mockWebServer.url("/").toString())
             .build();
-
+    private final WeatherRepository weatherRepository = Mockito.mock(WeatherRepository.class);
 
     static void setUp() throws IOException {
         mockWebServer.start();
@@ -47,7 +48,7 @@ public class WeatherServiceTest {
         Mockito.when(environment.getProperty("openweathermap.api.key")).thenReturn("test");
         Mockito.when(environment.getProperty("openweathermap.api.weather.url")).thenReturn(mockWebServer.url("/").toString());
         Mockito.when(environment.getProperty("openweathermap.api.geo.url")).thenReturn(mockWebServer.url("/").toString());
-        weatherService = new WeatherService(environment, webClient);
+        weatherService = new WeatherService(environment, webClient, weatherRepository);
     }
 
     @AfterAll

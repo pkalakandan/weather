@@ -1,8 +1,11 @@
 package com.example.weather.service;
 
+import com.example.weather.entity.Weather;
+import com.example.weather.entity.WeatherId;
 import com.example.weather.model.Geo;
 import com.example.weather.model.WeatherResponse;
 import com.example.weather.model.response.WeatherForecastResponse;
+import com.example.weather.repository.WeatherRepository;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,22 +22,47 @@ public class WeatherService {
     private final String API_WEATHER_URL;
     private final String API_GEO_URL;
 
-    public WeatherService(Environment environment, WebClient webClient) {
+    private final WeatherRepository weatherRepository;
+
+    public WeatherService(Environment environment, WebClient webClient, WeatherRepository weatherRepository) {
         this.webClient = webClient;
         this.API_KEY = environment.getProperty("openweathermap.api.key");
         this.API_WEATHER_URL = environment.getProperty("openweathermap.api.weather.url");
         this.API_GEO_URL = environment.getProperty("openweathermap.api.geo.url");
+        this.weatherRepository = weatherRepository;
     }
 
     public Mono<WeatherForecastResponse> getWeather(String country, String city) {
-        logger.info("Getting weather");
+        // log every step
+        return fetchWeatherFromRepository(country, city)
+                //call getGeoLocation if not found in repository
+                .switchIfEmpty(getWeatherFromAPI(country, city))
+                .map(weather -> {
+                    saveWeatherToRepository(new Weather(city, country, weather.getDescription()));
+                    return new WeatherForecastResponse(weather.getDescription());
+                });
+    }
 
+    private void saveWeatherToRepository(Weather weather) {
+        weatherRepository.save(weather);
+    }
+
+    Mono<WeatherForecastResponse> getWeatherFromAPI(String country, String city) {
         return getGeoLocation(country, city)
                 //call getWeatherByLatLon with lat and lon from Geo if not null or empty
                 .filter(geo -> geo.length > 0 && geo[0].getLat() != 0 && geo[0].getLon() != 0)
                 .flatMap(geoResponse -> getWeatherByLatLon(geoResponse[0].getLat(),
                         geoResponse[0].getLon()))
+                .doOnSuccess(e -> logger.info("Weather fetched from API"))
                 .map(weatherResponse -> new WeatherForecastResponse(weatherResponse.getWeather().get(0).getDescription()));
+    }
+
+    Mono<WeatherForecastResponse> fetchWeatherFromRepository(String country, String city) {
+        WeatherId weatherId = new WeatherId(city, country);
+        return Mono.justOrEmpty(weatherRepository.findById(weatherId))
+                .doOnSuccess(e -> logger.info("Weather fetched from repository"))
+                .map(weather -> new WeatherForecastResponse(weather.getDescription())
+        );
     }
 
     Mono<WeatherResponse> getWeatherByLatLon(double lat, double lon) {
